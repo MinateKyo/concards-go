@@ -3,6 +3,7 @@ package card
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 // Card represents a single flash card. Contains all
@@ -26,6 +27,8 @@ func New(lines []string) (c *Card, err error) {
 			err = errors.New("Found extra lines after card was finished")
 		}
 
+		line = tabify(line)
+
 		lineRunes := []rune(line)
 		if !inQuestion && !inAnswer && lineRunes[0] != '\t' {
 			inQuestion = true
@@ -35,7 +38,7 @@ func New(lines []string) (c *Card, err error) {
 		} else if inQuestion && lineRunes[0] == '\t' {
 			inQuestion = false
 			inAnswer = true
-			c.Answer = line
+			c.Answer = strings.Replace(line, "\t", "", 1)
 		} else if inAnswer && lineRunes[0] == '\t' {
 			c.Answer = fmt.Sprintf("%s\n%s", c.Answer, line)
 		} else if inAnswer && lineRunes[0] != '\t' && lineRunes[0] != '~' {
@@ -48,4 +51,12 @@ func New(lines []string) (c *Card, err error) {
 	}
 
 	return
+}
+
+func tabify(line string) string {
+	if line[0] == ' ' && line[1] == ' ' && line[2] == ' ' && line[3] == ' ' {
+		line = fmt.Sprintf("\t%s", line[4:])
+	}
+
+	return line
 }
